@@ -1,0 +1,30 @@
+Issue key,Issue Type,Summary,Assignee,Reporter,Priority,Status,Created,Updated,Components,Affects versions,Labels,Labels,Description,Inward issue link (Blocks),Outward issue link (Blocks)
+ADAS-101,Bug,gPTP offset spikes to 8 µs after switch reset,rajesh,skumar,P1,In Progress,2026-06-20 10:02,2026-07-01 16:44,TimeSync,SW-B03,gptp,timing,"h2. Observed
+After a commanded reset of the 88Q5050, offset to GM spikes to 8 µs for ~2 s.
+
+h2. Expected
+Offset stays ≤ 1 µs (3σ) per SYS-GPTP-001.
+
+h2. Notes
+* Reproducible on bench B2
+* {{tsyncd}} logs show BMCA re-run
+{code}
+[ts] offset=8123ns state=UNCERTAIN
+{code}",,ADAS-140
+ADAS-102,Bug,HTP orchestrator misses deadline signal under thermal throttling,mfischer,rajesh,P1,Open,2026-06-22 08:15,2026-06-29 11:20,Perception,SW-B03,htp,deadline,"h2. Observed
+At Tj > 95 °C the deadline violation signal arrives 40 ms late.
+
+h2. Impact
+Violates SYS-HTP-001 (≤ 5 ms).",ADAS-101,
+ADAS-103,Task,Export SYS.3 gPTP tracker for offline review,rajesh,rajesh,P3,Done,2026-06-25 13:00,2026-06-26 09:30,TimeSync,,codebeamer,,Weekly Codebeamer CSV export of the gPTP requirements tracker for the offline agent workflow.,,
+ADAS-104,Bug,SafeRTOS heartbeat DTC not latched after PMIC brown-out,akram,skumar,P2,In Review,2026-06-27 15:48,2026-07-02 10:05,Safety,SW-B02,sail,pmic,"h2. Observed
+Brown-out on Intel PMIC rail VDD_SAIL causes heartbeat gap but DTC_SAIL_HB_LOSS is not latched.
+
+h2. Suspected
+Latch window (100 ms) shorter than PMIC recovery ramp (140 ms).",,ADAS-101
+ADAS-105,Story,Define degradation ladder for camera time-base uncertainty,rajesh,pmeier,P2,Open,2026-06-30 09:12,2026-07-03 17:26,TimeSync,,concept,degradation,"As a fusion consumer I need a defined degradation ladder (kSynchronized -> kUncertain -> kUnavailable) so that ADAS features shed load predictably.
+
+h3. Acceptance criteria
+# Ladder documented as operating concept
+# States mapped to ara::tsync status API
+# Reviewed by safety",,

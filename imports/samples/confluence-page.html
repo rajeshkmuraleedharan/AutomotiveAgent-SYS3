@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head><title>gPTP Holdover Strategy — Decision Page</title></head>
+<body>
+<h1>gPTP Holdover Strategy — Decision Page</h1>
+<p>Space: <strong>ADAS Platform</strong> | Author: Rajesh | Last updated: 2026-06-18</p>
+
+<h2>Problem</h2>
+<p>When the grandmaster becomes unreachable, camera fusion needs a bounded time-base drift until re-sync. We must pick a holdover strategy for the <em>SA8620P</em> time-base provider.</p>
+
+<h2>Options considered</h2>
+<ul>
+  <li>Free-running local oscillator (no compensation)</li>
+  <li>Drift-compensated holdover using last known rate ratio</li>
+  <li>Redundant grandmaster with fast BMCA failover</li>
+</ul>
+
+<h2>Decision</h2>
+<p>Drift-compensated holdover, with redundant GM as a later platform option. Rate ratio is frozen at sync loss and applied by <code>tsyncd</code> on QNX:KryoP0.</p>
+
+<h2>Consequences</h2>
+<table>
+  <tr><th>Aspect</th><th>Impact</th></tr>
+  <tr><td>Accuracy during holdover</td><td>≤ 5 µs drift over 2 s at 25 °C</td></tr>
+  <tr><td>Safety</td><td>kUncertain published immediately; DTC_GPTP_SYNC_LOSS after 250 ms</td></tr>
+  <tr><td>Cost</td><td>No extra hardware</td></tr>
+</table>
+
+<h2>Follow-ups</h2>
+<ol>
+  <li>Requirements SYS-GPTP-001/002 updated in Codebeamer</li>
+  <li>Bench test with fault-injection switch (JIRA ADAS-101)</li>
+</ol>
+</body>
+</html>
