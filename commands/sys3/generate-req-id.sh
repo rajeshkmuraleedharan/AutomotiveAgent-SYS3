@@ -14,4 +14,7 @@ if [[ -z "$TOPIC" ]]; then
 fi
 
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-python3 "$REPO_ROOT/scripts/generate-req-id.py" --topic "$TOPIC" --count "$COUNT" --root "$REPO_ROOT"
+
+PYTHON="$REPO_ROOT/.venv/bin/python3"
+[[ -x "$PYTHON" ]] || PYTHON="python3"
+"$PYTHON" "$REPO_ROOT/scripts/generate-req-id.py" --topic "$TOPIC" --count "$COUNT" --root "$REPO_ROOT"

@@ -6,14 +6,17 @@ set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
+PYTHON="$REPO_ROOT/.venv/bin/python3"
+[[ -x "$PYTHON" ]] || PYTHON="python3"
+
 echo "=== ASPICE SYS.3 Compliance Check ==="
 echo
 
 # Run schema validation (covers mandatory fields, ASIL, weak verbs)
 if [[ "${1:-}" == "--all" ]]; then
-    python3 "$REPO_ROOT/scripts/validate-requirements.py" --all
+    "$PYTHON" "$REPO_ROOT/scripts/validate-requirements.py" --all
 else
-    python3 "$REPO_ROOT/scripts/validate-requirements.py" "$@"
+    "$PYTHON" "$REPO_ROOT/scripts/validate-requirements.py" "$@"
 fi
 
 EXIT_CODE=$?

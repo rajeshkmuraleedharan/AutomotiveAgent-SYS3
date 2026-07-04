@@ -5,6 +5,9 @@
 set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+
+PYTHON="$REPO_ROOT/.venv/bin/python3"
+[[ -x "$PYTHON" ]] || PYTHON="python3"
 OUTPUT="${CB_EXPORT_FILE:-cb-import.csv}"
 
 FILES=()
@@ -20,5 +23,5 @@ if [[ ${#FILES[@]} -eq 0 ]]; then
     exit 1
 fi
 
-python3 "$REPO_ROOT/scripts/cb-formatter.py" "${FILES[@]}" --output "$OUTPUT"
+"$PYTHON" "$REPO_ROOT/scripts/cb-formatter.py" "${FILES[@]}" --output "$OUTPUT"
 echo "Exported to: $OUTPUT"
