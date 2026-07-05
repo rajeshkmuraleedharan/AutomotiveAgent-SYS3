@@ -83,7 +83,7 @@ on this project the longer it is used.
 └── prompts/         ← Slash commands
 
 commands/            ← Shell automation (ID gen, CB export, validation, import)
-docs/                ← Writing guide, workflow, CB import guide
+docs/                ← Writing guide, workflow, CB import guide, wiki Copilot-port guide
 imports/             ← Offline tool exchange: inbox → normalized → archive (+ samples)
 knowledge-base/
 │   ├── standards/   ← ASPICE SYS.2/SYS.3, ISO 26262
