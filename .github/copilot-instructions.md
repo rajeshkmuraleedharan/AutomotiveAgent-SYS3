@@ -15,8 +15,13 @@ architecture elements (`ARC-*` blocks + mermaid views, see
 `instructions/architecture-schema.instructions.md`), concepts (`CON-*` markdown, see
 `instructions/concept-templates.instructions.md`).
 
-Working rules: consult `project-context/` (conventions, LEARNINGS, ADRs) first;
-tool state (Codebeamer/JIRA/Confluence) is read from `imports/normalized/` only.
+Working rules: consult `project-context/` (conventions, LEARNINGS, ADRs) and the
+relevant `wiki/topics/*.md` page (compiled subsystem state) first; tool state
+(Codebeamer/JIRA/Confluence) is read from `imports/normalized/` only.
+
+Standing behaviors (no command needed): when Rajesh shares a URL/article/paper,
+fetch and save it to `raw/`, then route it into `wiki/` or `project-context/` per
+`rules/wiki-rules.md`. For any knowledge question, check `wiki/index.md` first.
 
 Do not generate SWE.1 requirements, code, or implementation artefacts unless explicitly asked.
 

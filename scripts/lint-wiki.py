@@ -13,9 +13,15 @@ for the LLM-judgment half (contradictions, content-drift staleness, stale Open
 Questions). This script never detects semantic contradictions; that's out of scope
 for a mechanical checker by design (see rules/wiki-rules.md).
 
+With --fix, applies ONLY the two auto-fixable findings from rules/wiki-rules.md's
+Auto-Fix Categorization table (missing wiki/index.md row; Last-updated date behind
+the page's own History) — everything else (dangling IDs/ADR links, bloat) is
+reported only, never auto-applied, because it needs human/LLM judgment.
+
 Usage:
     python scripts/lint-wiki.py file.md [file.md ...]
-    python scripts/lint-wiki.py --all     # scan all wiki/topics/*.md files
+    python scripts/lint-wiki.py --all             # scan all wiki/topics/*.md files
+    python scripts/lint-wiki.py --all --fix       # also apply safe auto-fixes
 """
 
 import argparse
@@ -150,6 +156,43 @@ def lint_page(path: Path, root: Path, ids: set[str], manifest: list[dict],
     return errors, warnings
 
 
+def fix_missing_index_row(path: Path, root: Path) -> str | None:
+    """Append a wiki/index.md row for a topic page missing one. Returns a fix summary or None."""
+    page = parse_page(path)
+    if not page["area"] or not page["status"] or not page["last_updated"]:
+        return None  # can't safely build a row without a valid header
+    index_path = root / "wiki" / "index.md"
+    slug = path.stem
+    row = (f"| [{slug}](topics/{path.name}) | {page['area']} | {page['status']} | "
+           f"{page['last_updated']} | (see page History) |\n")
+    text = index_path.read_text(encoding="utf-8")
+    if not text.endswith("\n"):
+        text += "\n"
+    index_path.write_text(text + row, encoding="utf-8")
+    return f"added wiki/index.md row for {slug}"
+
+
+def fix_stale_header_date(path: Path, root: Path) -> str | None:
+    """Bump the header Last-updated date if History mentions a later one. Returns a fix summary or None."""
+    page = parse_page(path)
+    if not page["last_updated"]:
+        return None
+    history = page["sections"].get("History", "")
+    history_dates = re.findall(r"\b(\d{4}-\d{2}-\d{2})\b", history)
+    if not history_dates:
+        return None
+    latest = max(history_dates)
+    if latest <= page["last_updated"]:
+        return None
+    text = page["text"]
+    new_text = HEADER_RE.sub(
+        lambda m: f"Area: {m.group(1)} | Status: {m.group(2).strip()} | Last updated: {latest}",
+        text, count=1,
+    )
+    path.write_text(new_text, encoding="utf-8")
+    return f"updated Last updated {page['last_updated']} -> {latest} in {path.name} (from History)"
+
+
 def known_ids_in_file(root: Path, rel_path: str, area: str) -> str:
     """Return area if the referenced normalized file contains an ID for that area, else ''."""
     full = root / rel_path
@@ -166,6 +209,8 @@ def main():
     parser = argparse.ArgumentParser(description="Lint wiki/ topic pages (mechanical checks)")
     parser.add_argument("files", nargs="*", help="Topic page files to lint")
     parser.add_argument("--all", action="store_true", help="Lint all wiki/topics/*.md files")
+    parser.add_argument("--fix", action="store_true",
+                        help="Apply safe auto-fixes (missing index row, stale header date) before reporting")
     args = parser.parse_args()
 
     root = repo_root()
@@ -173,6 +218,18 @@ def main():
     if not paths:
         print("No files to lint. Use --all or pass file paths.", file=sys.stderr)
         sys.exit(1)
+
+    if args.fix:
+        existing_topics = set(index_rows(root).keys())
+        for path in paths:
+            fixed = fix_stale_header_date(path, root)
+            if fixed:
+                print(f"FIXED {fixed}")
+            if path.stem not in existing_topics:
+                fixed = fix_missing_index_row(path, root)
+                if fixed:
+                    print(f"FIXED {fixed}")
+                    existing_topics.add(path.stem)
 
     ids = known_ids(root)
     manifest = manifest_rows(root)

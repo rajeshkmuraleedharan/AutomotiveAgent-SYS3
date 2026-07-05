@@ -4,17 +4,21 @@ Skill for accumulating and applying project experience across sessions.
 Memory lives in `project-context/` and compounds: the agent gets better at Rajesh's
 project the more it is corrected and the more decisions it records.
 
-## Read-before-write (every task)
+## Read-before-write
 
-At the start of any requirements / architecture / concept / analysis task:
+**For any knowledge question** (not just an active engineering task) — check
+`wiki/index.md` first, pull the relevant topic page(s), and cite them before
+re-deriving from raw imports, `knowledge-base/`, or outside research from scratch.
+This is the auto-query behavior described in `CLAUDE.md`'s "Standing behaviors".
+
+**At the start of any requirements / architecture / concept / analysis task**, also:
 
 1. Read `project-context/conventions.md` — hard conventions, always apply
 2. Scan `project-context/LEARNINGS.md` for entries touching the feature at hand
 3. Check `project-context/decisions/` for ADRs that constrain the design space
 4. Check `imports/normalized/manifest.md` for recent tool state on the topic
 5. Check the relevant `wiki/topics/{slug}.md` for the current compiled state
-   (subsystem facts, open questions, known bugs) before re-deriving from raw imports
-   or `knowledge-base/` from scratch — see `rules/wiki-rules.md`
+   (subsystem facts, open questions, known bugs) — see `rules/wiki-rules.md`
 
 An output that contradicts an Accepted ADR or a convention is wrong unless Rajesh
 explicitly overrides it — then record the override as a new learning/ADR.

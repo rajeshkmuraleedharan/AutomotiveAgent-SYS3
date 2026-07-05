@@ -2,6 +2,7 @@
 # Mechanical lint pass over wiki/ topic pages
 # Usage: commands/wiki/lint-wiki.sh [file.md ...]
 #        commands/wiki/lint-wiki.sh --all
+#        commands/wiki/lint-wiki.sh --all --fix   # also apply safe auto-fixes
 
 set -euo pipefail
 
@@ -11,8 +12,4 @@ PYTHON="$REPO_ROOT/.venv/bin/python3"
 [[ -x "$PYTHON" ]] || PYTHON="python3"
 
 cd "$REPO_ROOT"
-if [[ "${1:-}" == "--all" ]]; then
-    "$PYTHON" "$REPO_ROOT/scripts/lint-wiki.py" --all
-else
-    "$PYTHON" "$REPO_ROOT/scripts/lint-wiki.py" "$@"
-fi
+"$PYTHON" "$REPO_ROOT/scripts/lint-wiki.py" "$@"

@@ -15,6 +15,17 @@ markdown (concepts).
    offer `/record-learning`; if it produced a novel durable fact about subsystem
    state — offer `/wiki-update`
 
+## Standing behaviors (no command needed)
+
+- **Auto-ingest**: when Rajesh shares a URL, article, or paper in conversation,
+  fetch it, save it to `raw/{date}-{slug}.md`, and route it into `wiki/` or
+  `project-context/` per `rules/wiki-rules.md`'s routing rule — don't wait to be
+  asked. Details: `.github/instructions/raw-sources.instructions.md`.
+- **Auto-query**: for any knowledge question (not just active requirements/
+  architecture/analysis tasks), check `wiki/index.md` first and cite the relevant
+  topic page(s) before re-deriving from raw imports or research from scratch. This
+  is wired into `skills/project-memory/SKILL.md`'s read-before-write habit.
+
 ## Quick Start
 
 ```
@@ -48,7 +59,7 @@ markdown (concepts).
 | `/concept-trade-study` | Weighted trade study between design options |
 | `/import-normalize` | Process Codebeamer/JIRA/Confluence exports from `imports/inbox/` (auto-folds into `wiki/`) |
 | `/wiki-update` | Fold `imports/normalized/` content into `wiki/` topic pages (standalone/backfill) |
-| `/wiki-lint` | Check `wiki/` for contradictions, staleness, orphan pages, gaps |
+| `/wiki-lint` | Auto-fix safe wiki issues + report contradictions, staleness, orphan pages, gaps (with source suggestions) |
 | `/record-learning` | Persist a correction/decision into project memory |
 
 ## ID Conventions
@@ -62,8 +73,9 @@ markdown (concepts).
 - Requirements: `commands/sys3/validate-schema.sh <file>` (locked schema — never edit it)
 - Architecture: `commands/arch/validate-arch.sh <file>` (realizes-resolution, ASIL ceilings)
 - Imports: `commands/import/normalize-exports.sh [--dry-run]`
-- Wiki: `commands/wiki/lint-wiki.sh [--all]` (mechanical checks; `/wiki-lint` adds
-  the LLM-judgment pass for contradictions and content-drift staleness)
+- Wiki: `commands/wiki/lint-wiki.sh [--all] [--fix]` (mechanical checks; `--fix`
+  applies only safe auto-fixes, see `rules/wiki-rules.md`; `/wiki-lint` adds the
+  LLM-judgment pass for contradictions, content-drift staleness, and gaps)
 
 ## Offline tool integration
 
@@ -76,6 +88,10 @@ continuously-updated view of each subsystem's current state, distinct from the r
 `imports/normalized/` transcript. This is what keeps months of weekly imports from
 turning into dozens of inert, unread files. Details: `rules/wiki-rules.md`,
 `.github/instructions/wiki.instructions.md`.
+
+`raw/` is the sibling source layer for public web content (unlike `imports/`, no
+export step needed — links/articles/papers are fetched live, see "Standing
+behaviors" above and `.github/instructions/raw-sources.instructions.md`).
 
 ## Platform Constraint
 

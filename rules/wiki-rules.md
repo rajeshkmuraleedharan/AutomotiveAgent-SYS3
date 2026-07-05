@@ -1,6 +1,8 @@
 # Wiki Rules
 
-Rules for `wiki/` — compiled subject-matter memory synthesized from `imports/normalized/`.
+Rules for `wiki/` — compiled subject-matter memory synthesized from
+`imports/normalized/` (offline tool exports) and `raw/` (live-fetched external
+sources — links, articles, papers; see `raw-sources.instructions.md`).
 
 ## What the Wiki Is NOT
 
@@ -25,6 +27,19 @@ Rules for `wiki/` — compiled subject-matter memory synthesized from `imports/n
 - No entity sub-layer (no per-component or per-person pages) until a topic page's
   Cross-References section becomes unusable for grep — YAGNI
 
+## Raw Source Routing (for auto-ingested links/articles/papers)
+
+A fetched `raw/` source is not automatically wiki content — route it first:
+
+| Source is about... | Route to |
+|---|---|
+| A subsystem topic (protocol specs, standards, vendor docs, papers on gPTP/HTP/TSC/etc.) | Fold into the matching (or new) `wiki/topics/{area}.md`, same as a tool import |
+| How the agent/tooling itself should work (patterns, workflows — not ADAS subject matter) | `project-context/` (LEARNINGS entry or ADR via `/record-learning`), never a subsystem wiki page |
+| General engineering reference with no clear subsystem fit | `wiki/topics/general-references.md` (catch-all, created on first use, same 5-section schema) |
+
+The `raw/` file itself is never deleted or rewritten once routed — it's the
+immutable source of record; the wiki page cites it in Cross-References.
+
 ## Ingest vs Update Decision
 
 | New import contains... | Action |
@@ -48,6 +63,26 @@ Rules for `wiki/` — compiled subject-matter memory synthesized from `imports/n
 - **Orphan page**: topic page with no inbound reference from any other page's
   Cross-References and no ingest activity for a long stretch — candidate for an
   archival note in `index.md`, never silent deletion
+
+## Auto-Fix Categorization (for `/wiki-lint --fix`)
+
+Only genuinely mechanical, no-information-loss findings may be auto-applied.
+Everything else is always proposed, never silently applied.
+
+| Finding | Auto-fixable? | Why |
+|---|---|---|
+| Topic page exists but missing from `wiki/index.md` | Yes | Adding an index row loses nothing and is unambiguous |
+| `Last updated` date behind the page's own latest History line | Yes | The date is derivable from the page's own content |
+| Dangling ID reference (typo or removed ID) | No | Could be a real error in the source content — needs a human/LLM decision on which is right |
+| Dangling ADR link | No | Same — don't guess which ADR was meant |
+| Contradiction, content-drift staleness, stale Open Questions | No | Semantic judgment required by definition |
+| Bloat/split candidate | No | Splitting is a structural decision, always human-confirmed |
+
+When `/wiki-lint` finds gaps (a topic with thin Cross-References, an Open Question
+unresolved across many cycles, an area with no wiki content at all despite active
+imports), it should suggest concrete new sources to close the gap (e.g. "no vendor
+doc covers ARC-GPTP-003's TSN deployment — look for the 88Q5050 datasheet section on
+egress scheduling") rather than only reporting the gap.
 
 ## Precedence
 

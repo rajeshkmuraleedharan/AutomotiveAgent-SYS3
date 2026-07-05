@@ -30,6 +30,13 @@ blocks + mermaid views (architecture), markdown documents (concepts).
 - **Project memory first**: consult `project-context/` (conventions, LEARNINGS, ADRs)
   at task start; offer `/record-learning` at task end
 - **Tool state is offline**: read imported tool content only from `imports/normalized/`
+- **Wiki first for subsystem state**: check the relevant `wiki/topics/*.md` page
+  (compiled, continuously-updated Current State/Open Questions/Decisions) before
+  re-deriving from raw imports or `knowledge-base/` from scratch — see
+  `rules/wiki-rules.md`
+- **Auto-ingest, no command needed**: when Rajesh shares a URL/article/paper, fetch
+  it, save to `raw/{date}-{slug}.md`, and route it into `wiki/` or `project-context/`
+  per `rules/wiki-rules.md` — see `.github/instructions/raw-sources.instructions.md`
 - **Traceability chain**: `STK-*/CON-* → SYS.2 → SYS.3 → ARC-*`; architecture without
   a driving requirement is a finding
 - The requirement schema is **locked** (`sys3-requirements-schema.instructions.md`)
