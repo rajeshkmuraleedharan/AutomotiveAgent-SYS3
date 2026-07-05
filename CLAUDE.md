@@ -7,11 +7,13 @@ markdown (concepts).
 
 ## Session workflow
 
-1. **Task start**: consult `project-context/` (conventions.md, LEARNINGS.md, ADRs)
-   and check `imports/normalized/manifest.md` for recent tool state
+1. **Task start**: consult `project-context/` (conventions.md, LEARNINGS.md, ADRs),
+   check `imports/normalized/manifest.md` for recent tool state, and check the
+   relevant `wiki/topics/*.md` page for compiled subsystem state
 2. Work with the agents/prompts below
 3. **Task end**: if the session produced a correction, review finding, or decision —
-   offer `/record-learning`
+   offer `/record-learning`; if it produced a novel durable fact about subsystem
+   state — offer `/wiki-update`
 
 ## Quick Start
 
@@ -44,7 +46,9 @@ markdown (concepts).
 | `/arch-allocation` | SYS→ARC→target allocation matrix with conflict findings |
 | `/concept-feature` | Feature or operating concept (pre-requirements) |
 | `/concept-trade-study` | Weighted trade study between design options |
-| `/import-normalize` | Process Codebeamer/JIRA/Confluence exports from `imports/inbox/` |
+| `/import-normalize` | Process Codebeamer/JIRA/Confluence exports from `imports/inbox/` (auto-folds into `wiki/`) |
+| `/wiki-update` | Fold `imports/normalized/` content into `wiki/` topic pages (standalone/backfill) |
+| `/wiki-lint` | Check `wiki/` for contradictions, staleness, orphan pages, gaps |
 | `/record-learning` | Persist a correction/decision into project memory |
 
 ## ID Conventions
@@ -58,12 +62,20 @@ markdown (concepts).
 - Requirements: `commands/sys3/validate-schema.sh <file>` (locked schema — never edit it)
 - Architecture: `commands/arch/validate-arch.sh <file>` (realizes-resolution, ASIL ceilings)
 - Imports: `commands/import/normalize-exports.sh [--dry-run]`
+- Wiki: `commands/wiki/lint-wiki.sh [--all]` (mechanical checks; `/wiki-lint` adds
+  the LLM-judgment pass for contradictions and content-drift staleness)
 
 ## Offline tool integration
 
 No API access to Codebeamer/JIRA/Confluence. Raw exports → `imports/inbox/` →
 normalizer → `imports/normalized/` (the only import content the agent reads).
 Details: `skills/tool-exports/SKILL.md`, `rules/import-rules.md`.
+
+Every import batch also gets folded into `wiki/topics/*.md` — a compiled,
+continuously-updated view of each subsystem's current state, distinct from the raw
+`imports/normalized/` transcript. This is what keeps months of weekly imports from
+turning into dozens of inert, unread files. Details: `rules/wiki-rules.md`,
+`.github/instructions/wiki.instructions.md`.
 
 ## Platform Constraint
 
@@ -76,4 +88,8 @@ Classic AUTOSAR is out. SAIL runs SafeRTOS only. All AUTOSAR is Adaptive on QNX.
 - [ ] Add Codebeamer project field IDs to `codebeamer-format.instructions.md`
 - [ ] Validate CB import format against live Codebeamer instance
 - [ ] Fill `[TBD]` internal specifics in `knowledge-base/tools/` and `knowledge-base/architecture/`
-- [ ] Phase 2: system-level bug analysis (bug-triage skill, `/bug-rootcause`, JIRA `--defects` profile)
+- [ ] Replace the three demo-seeded `wiki/topics/*.md` pages with real content once
+      actual Codebeamer/JIRA/Confluence exports are imported
+- [ ] Phase 2: system-level bug analysis (bug-triage skill, `/bug-rootcause`, JIRA
+      `--defects` profile) — extend wiki topic pages with a recurring-symptom-pattern
+      section once this exists

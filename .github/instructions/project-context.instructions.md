@@ -23,6 +23,7 @@ applyTo: ["project-context/**"]
 - [ ] `LEARNINGS.md` scanned for the feature/topic at hand
 - [ ] Relevant ADRs identified (cite them in output: "per ADR-003")
 - [ ] Latest imports checked (`imports/normalized/manifest.md`)
+- [ ] Relevant `wiki/topics/{slug}.md` checked for compiled subsystem state
 
 ## Task-end
 

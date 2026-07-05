@@ -61,3 +61,5 @@ The system shall [requirement text].
 - gPTP deep knowledge: `knowledge-base/features/gptp-timesync/`
 - HTP deep knowledge: `knowledge-base/features/htp-orchestration/`
 - TSC deep knowledge: `knowledge-base/features/technical-safety-concept/`
+- Compiled subsystem state: `wiki/topics/{gptp-timesync|htp-orchestration|technical-safety-concept}.md`
+  (current facts, known bugs, open questions — check before drafting)

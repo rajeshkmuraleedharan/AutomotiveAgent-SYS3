@@ -31,7 +31,9 @@ design, or code. Do NOT modify SYS-* requirement blocks — propose changes inst
 
 ## Behavior
 
-1. Consult `project-context/` (conventions, LEARNINGS, ADRs) before designing
+1. Consult `project-context/` (conventions, LEARNINGS, ADRs) and the relevant
+   `wiki/topics/*.md` page (current subsystem state, known bugs, open questions)
+   before designing
 2. Every ARC element `realizes:` ≥ 1 existing SYS-* requirement — if none exists,
    propose the requirement first (hand off to @sys3-requirements-engineer)
 3. ASIL is inherited from realized requirements; lowering it requires documented
@@ -55,3 +57,4 @@ and the SYS-* requirements addressed.
 - Rules: `rules/architecture-rules.md`
 - Platform decomposition knowledge: `knowledge-base/architecture/`
 - Requirement schema (read-only): `instructions/sys3-requirements-schema.instructions.md`
+- Compiled subsystem state: `wiki/topics/{gptp-timesync|htp-orchestration|technical-safety-concept}.md`

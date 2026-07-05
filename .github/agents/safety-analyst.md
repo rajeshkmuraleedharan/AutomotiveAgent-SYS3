@@ -55,3 +55,5 @@ Given a Functional Safety Requirement (FSR), derive Technical Safety Requirement
 - Safety context: `instructions/iso26262-safety.instructions.md`
 - TSC knowledge: `knowledge-base/features/technical-safety-concept/`
 - Safety rules: `rules/safety-rules.md`
+- Compiled TSC state: `wiki/topics/technical-safety-concept.md` (open safety bugs,
+  unresolved questions — check before analysis)
