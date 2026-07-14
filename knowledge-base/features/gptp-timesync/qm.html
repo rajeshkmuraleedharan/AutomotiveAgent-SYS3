@@ -1,0 +1,204 @@
+<html>
+<head>
+<style>
+body { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11pt; line-height: 1.6; color: #1a1a1a; max-width: 900px; margin: 0 auto; }
+h1 { font-size: 18pt; color: #003366; border-bottom: 2px solid #003366; padding-bottom: 5px; }
+h2 { font-size: 14pt; color: #003366; margin-top: 25px; border-bottom: 1px solid #ccc; padding-bottom: 3px; }
+h3 { font-size: 12pt; color: #005599; margin-top: 20px; }
+table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 10pt; }
+th { background-color: #003366; color: white; padding: 6px 8px; text-align: left; }
+td { border: 1px solid #ccc; padding: 5px 8px; vertical-align: top; }
+tr:nth-child(even) { background-color: #f5f8fc; }
+code { background-color: #f0f0f0; padding: 1px 4px; border-radius: 3px; font-size: 10pt; }
+pre { background-color: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; padding: 10px; overflow-x: auto; }
+pre code { background: none; padding: 0; }
+blockquote { border-left: 4px solid #003366; padding-left: 12px; margin: 10px 0; color: #555; }
+.doc-header { text-align: center; margin-bottom: 30px; }
+.doc-header h1 { border: none; margin-bottom: 5px; }
+.doc-header .meta { color: #666; font-size: 10pt; }
+hr { border: none; border-top: 1px solid #ccc; margin: 20px 0; }
+</style>
+</head>
+<body>
+
+<div class="doc-header">
+  <h1>gPTP Qualification Through a QM-Only Ethernet Switch</h1>
+  <div class="meta">
+    <strong>Document ID:</strong> TSC-DD-003 | <strong>Revision:</strong> 1.0<br>
+    <strong>Date:</strong> 2026-07-14 | <strong>Classification:</strong> Internal Review
+  </div>
+  <hr>
+</div>
+
+<h2>1. Executive Summary</h2>
+<p>This document addresses the feasibility of qualifying gPTP (IEEE 802.1AS) time synchronization from a Grandmaster clock to an end station when the Ethernet switch in the path is classified as QM (Quality Management — non-safety) under ISO 26262. The core question: can a safety-qualified gPTP chain be established through a non-qualified, non-time-aware switch?</p>
+<p><strong>Conclusion:</strong> Yes, with constraints. The approach depends on the application's time accuracy requirements, the switch's traffic characteristics, and the safety integrity level (ASIL) required by the consuming function. With a single switch hop, the impact is typically manageable under light-to-moderate network load.</p>
+
+<h2>2. The Core Problem</h2>
+
+<h3>2.1 gPTP and Time-Aware Bridges</h3>
+<p>gPTP (IEEE 802.1AS) relies on <strong>Time-Aware Bridges (TABs)</strong> — switches that implement IEEE 802.1AS — to maintain nanosecond-level accuracy. A TAB acts as either:</p>
+<ul>
+<li><strong>Transparent Clock (TC):</strong> measures residence time (switch delay) and corrects the Sync message in-place</li>
+<li><strong>Boundary Clock (BC):</strong> terminates the sync chain on one port and re-generates it on another</li>
+</ul>
+<p>A <strong>non-802.1AS switch</strong> (QM, not time-aware) does not implement TC or BC functionality. It forwards frames with unknown, variable delay, which gPTP cannot compensate for:</p>
+<ul>
+<li><code>Pdelay_Req</code> / <code>Pdelay_Resp</code> messages are forwarded like any other multicast frame</li>
+<li>Residence time through the switch is not measured or corrected</li>
+<li>The end station sees an uncompensated delay with jitter</li>
+</ul>
+
+<h3>2.2 Safety Classification — QM vs ASIL</h3>
+<table>
+<tr><th>Classification</th><th>Description</th><th>Qualification Required</th></tr>
+<tr><td>QM</td><td>Quality Management</td><td>No safety measures required</td></tr>
+<tr><td>ASIL-A</td><td>Lowest safety integrity</td><td>Low</td></tr>
+<tr><td>ASIL-B</td><td>Moderate safety integrity</td><td>Moderate</td></tr>
+<tr><td>ASIL-C</td><td>High safety integrity</td><td>High</td></tr>
+<tr><td>ASIL-D</td><td>Highest safety integrity</td><td>Highest</td></tr>
+</table>
+<p>A QM switch means the component was not developed with any safety integrity measures. Using it in a safety-critical path requires a safety case that justifies the omission or demonstrates that the risk is acceptable.</p>
+
+<h2>3. Impact Analysis — Single Switch Hop</h2>
+
+<h3>3.1 Delay Components</h3>
+<table>
+<tr><th>Component</th><th>Description</th><th>100BASE-T1</th><th>1000BASE-T1</th></tr>
+<tr><td><strong>Store-and-forward delay</strong></td><td>Frame reception + forwarding latency</td><td>~1.2 µs</td><td>~0.12 µs</td></tr>
+<tr><td><strong>Queuing delay (jitter)</strong></td><td>Variable wait in switch output queue</td><td>0–200 µs</td><td>0–200 µs</td></tr>
+<tr><td><strong>Pdelay measurement error</strong></td><td>Round-trip uncertainty</td><td>±jitter/2</td><td>±jitter/2</td></tr>
+<tr><td><strong>Total uncertainty</strong></td><td>Combined worst-case</td><td>0.5–200 µs</td><td>0.1–200 µs</td></tr>
+</table>
+
+<h3>3.2 Accuracy by Traffic Load</h3>
+<table>
+<tr><th>Traffic Scenario</th><th>Typical Accuracy</th><th>Jitter</th><th>Suitable For</th></tr>
+<tr><td><strong>Light load</strong> (&lt;10% bandwidth)</td><td>&lt;1 µs</td><td>&lt;100 ns</td><td>Most diagnostics, soft-real-time</td></tr>
+<tr><td><strong>Moderate load</strong> (10–50%)</td><td>1–5 µs</td><td>0.5–2 µs</td><td>Diagnostics, XCP, DLT</td></tr>
+<tr><td><strong>Heavy load</strong> (50–80%)</td><td>5–20 µs</td><td>2–10 µs</td><td>Non-safety timestamping</td></tr>
+<tr><td><strong>Congested</strong> (&gt;80%, non-TSN)</td><td>20–200 µs</td><td>10–200 µs</td><td>General time, not safety-critical</td></tr>
+</table>
+
+<h3>3.3 Comparison: Qualified vs Non-Qualified Switch</h3>
+<table>
+<tr><th>Metric</th><th>Qualified 802.1AS Switch (TC)</th><th>Non-Qualified Switch (QM)</th><th>Degradation</th></tr>
+<tr><td>Resident time correction</td><td>Yes (TC)</td><td>No</td><td>—</td></tr>
+<tr><td>Error bound</td><td>&lt;100 ns</td><td>1–200 µs</td><td>10–2000×</td></tr>
+<tr><td>Jitter</td><td>&lt;50 ns</td><td>0.1–200 µs</td><td>2–4000×</td></tr>
+<tr><td>Safety qualification</td><td>ASIL-B/D possible</td><td>QM only</td><td>—</td></tr>
+<tr><td>Determinism</td><td>Yes</td><td>No (depends on load)</td><td>—</td></tr>
+</table>
+
+<h2>4. Qualification Approaches</h2>
+
+<h3>4.1 Approach 1: Classify gPTP as QM (Recommended)</h3>
+<p>If the application consuming the time does not require safety integrity, classify gPTP itself as QM. The QM switch in the path is then irrelevant — no safety chain is broken.</p>
+<p><strong>When to use:</strong> Time sync is used for diagnostics, logging, statistics, or non-safety functions.</p>
+<p><strong>Pros:</strong> Simplest path, no additional safety work required.</p>
+<p><strong>Cons:</strong> If the consumer later needs ASIL, this approach does not apply.</p>
+
+<h3>4.2 Approach 2: Bounded Jitter + Safety Assumption</h3>
+<p>If the consumer needs ASIL:</p>
+<ol>
+<li><strong>Measure</strong> the actual switch jitter under worst-case load (burst traffic, full buffers, temperature extremes)</li>
+<li><strong>Bound</strong> the worst-case jitter through network calculus or measurement-based analysis</li>
+<li><strong>Determine</strong> if gPTP accuracy + jitter margin meets the consumer's time tolerance</li>
+<li><strong>Document</strong> as a safety assumption: "Switch model X, under load condition Y, has max delay Z µs"</li>
+</ol>
+<p><strong>When to use:</strong> The consumer has moderate ASIL requirements and the accuracy budget can accommodate the jitter.</p>
+<p><strong>Pros:</strong> No hardware change needed.</p>
+<p><strong>Cons:</strong> Requires measurement effort, validation, and ongoing monitoring. Risk of unanticipated jitter under untested conditions.</p>
+
+<h3>4.3 Approach 3: Direct Connection — No Switch in Path</h3>
+<p>Eliminate the switch from the gPTP sync path. Connect the Grandmaster directly to the end station via a dedicated Ethernet link.</p>
+<p><strong>When to use:</strong> Tight accuracy requirements (e.g., sensor fusion requiring &lt;1 µs), or when safety classification requires deterministic timing.</p>
+<p><strong>Pros:</strong> No jitter, full accuracy, no qualification dependency on switch.</p>
+<p><strong>Cons:</strong> Requires an additional Ethernet port and cabling. May not be feasible in space-constrained designs.</p>
+
+<h3>4.4 Approach 4: Boundary Clock Before QM Switch</h3>
+<p>Place an 802.1AS-capable Boundary Clock (safety-qualified) between the Grandmaster and the QM switch. The BC isolates the upstream safety chain from the downstream non-qualified segment.</p>
+<p><strong>When to use:</strong> The upstream Grandmaster must be ASIL-qualified, and the downstream switch remains QM.</p>
+<p><strong>Pros:</strong> Isolates the safety-qualified upstream segment. The QM switch carries regenerated sync (not the original Grandmaster chain).</p>
+<p><strong>Cons:</strong> Still has jitter through the QM switch. Adds cost and complexity of a BC device.</p>
+
+<h3>4.5 Approach 5: Software Compensation with Network Calculus</h3>
+<p>Use a software-based correction at the end station that models the known switch behavior.</p>
+<ol>
+<li>Characterize the switch's delay properties (minimum, maximum, distribution)</li>
+<li>Implement a delay model in the gPTP application</li>
+<li>Apply correction based on known traffic conditions</li>
+<li>Add a safety margin to the correction</li>
+</ol>
+<p><strong>When to use:</strong> The switch is the only non-qualified element and its behavior is well-characterized.</p>
+<p><strong>Pros:</strong> No hardware changes.</p>
+<p><strong>Cons:</strong> Software complexity, requires validation, risk of model inaccuracy.</p>
+
+<h2>5. Mitigation Strategies</h2>
+
+<h3>5.1 Traffic Prioritization</h3>
+<ul>
+<li>Tag gPTP frames with VLAN PCP 7 (highest priority)</li>
+<li>This reduces queuing jitter by giving PTP frames priority over other traffic</li>
+<li><strong>Effect:</strong> Jitter typically reduces from 50–200 µs to 1–10 µs on a capable switch</li>
+</ul>
+
+<h3>5.2 Sync Message Rate</h3>
+<table>
+<tr><th>Rate</th><th>Interval</th><th>Holdover risk</th></tr>
+<tr><td>8 Hz</td><td>125 ms</td><td>Standard (default)</td></tr>
+<tr><td>64 Hz</td><td>15.6 ms</td><td>Lower</td></tr>
+<tr><td>256 Hz</td><td>3.9 ms</td><td>Lowest</td></tr>
+</table>
+
+<h3>5.3 Holdover with Graceful Degradation</h3>
+<ul>
+<li>Sync loss detected → within 125 ms</li>
+<li>Holdover mode → up to 60 s (device-dependent)</li>
+<li>Graceful degradation → escalate to FAULT</li>
+<li>Safe state → application-defined fallback</li>
+</ul>
+
+<h2>6. Decision Matrix</h2>
+<table>
+<tr><th>Application</th><th>Accuracy Need</th><th>ASIL</th><th>Recommended Approach</th></tr>
+<tr><td>Diagnostics (DLT, UDS)</td><td>&lt;10 ms</td><td>QM</td><td>Approach 1 (QM)</td></tr>
+<tr><td>XCP measurement</td><td>&lt;100 µs</td><td>QM</td><td>Approach 1 (QM)</td></tr>
+<tr><td>Soft sensor fusion</td><td>&lt;10 µs</td><td>QM</td><td>Approach 1 or 2</td></tr>
+<tr><td>Camera/Radar fusion</td><td>&lt;1 µs</td><td>ASIL-B</td><td>Approach 3 (direct) or Approach 4 (BC)</td></tr>
+<tr><td>TSN gating</td><td>&lt;1 µs</td><td>ASIL-B</td><td><strong>Must use 802.1AS switch</strong></td></tr>
+<tr><td>Lidar point cloud</td><td>&lt;500 ns</td><td>ASIL-C</td><td><strong>Must use 802.1AS switch</strong></td></tr>
+<tr><td>Actuator sync</td><td>&lt;100 µs</td><td>ASIL-D</td><td>Approach 2 (if jitter fits) or 3</td></tr>
+</table>
+
+<h2>7. Qualification Checklist</h2>
+<table>
+<tr><th>#</th><th>Item</th><th>Required for</th></tr>
+<tr><td>1</td><td>Measure switch jitter under worst-case load</td><td>All approaches except 1</td></tr>
+<tr><td>2</td><td>Document switch model and operating conditions</td><td>All approaches</td></tr>
+<tr><td>3</td><td>Define accuracy budget for consuming application</td><td>All approaches</td></tr>
+<tr><td>4</td><td>Establish safety assumption for jitter bound</td><td>Approach 2, 5</td></tr>
+<tr><td>5</td><td>Implement holdover and graceful degradation</td><td>Approaches 2, 4, 5</td></tr>
+<tr><td>6</td><td>Verify path delay measurement accuracy</td><td>Approaches 2, 5</td></tr>
+<tr><td>7</td><td>Perform ISO 26262 safety analysis</td><td>Approaches 2–5</td></tr>
+<tr><td>8</td><td>Conduct fault injection testing</td><td>Approaches 2, 4, 5</td></tr>
+</table>
+
+<h2>8. References</h2>
+<table>
+<tr><th>Standard</th><th>Title</th><th>Relevance</th></tr>
+<tr><td>IEEE 802.1AS-2020</td><td>Timing and Synchronization for Time-Sensitive Applications</td><td>Core gPTP specification</td></tr>
+<tr><td>IEEE 802.1Q</td><td>Bridges and Bridged Networks</td><td>TSN, VLAN, QoS</td></tr>
+<tr><td>ISO 26262:2018</td><td>Road vehicles — Functional safety</td><td>Safety classification, QM/ASIL</td></tr>
+<tr><td>IEEE 1588-2019</td><td>Precision Time Protocol (PTP)</td><td>Base protocol for 802.1AS</td></tr>
+<tr><td>AUTOSAR SWS gPTP</td><td>AUTOSAR Specification of gPTP Stack</td><td>Automotive gPTP implementation</td></tr>
+</table>
+
+<h2>9. Revision History</h2>
+<table>
+<tr><th>Version</th><th>Date</th><th>Author</th><th>Changes</th></tr>
+<tr><td>1.0</td><td>2026-07-14</td><td>Jays HomeAgent</td><td>Initial release</td></tr>
+</table>
+
+</body>
+</html>
